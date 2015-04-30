@@ -14,31 +14,37 @@ import sys
 
 # The file path to the MS Access database of road observations.
 # This was tested with version XXX of MS Access.
-database_path = r"c:\Users\resarwas\Desktop\denaroad.accdb"
+database_path = r"C:\Users\resarwas\Desktop\ProcessingTool_build.mdb"
 
 # The connection string to the MS Access database.  In pyodbc format
 # See https://code.google.com/p/pyodbc/wiki/ConnectionStrings
-connection = "Driver={Microsoft Access Driver (*.mdb, *.accdb)}; Dbq=" + database_path
+# The following works on 64bit windows 7 enterprise with MS Access 2010
+connection = r'Driver={Microsoft Access Driver (*.mdb, *.accdb)}; Dbq='+database_path
+# Neither works on 64bit Windows 8.1 with MS Access 2013
+#connection = r'Provider=Microsoft.ACE.OLEDB.12.0;Data Source={0};Persist Security Info=False;'.format(database_path)
 
 # The name of the measured park road feature class.
 # Could be any valid ArcCatalog path, but the data set must be measured.
 # Only file geodatabase feature classes (not in a feature data set) have been tested.
 road_fc = r"X:\Albers\parks\dena\GeoDB\DENA_Base.gdb\DENA_TRANS_RoadsLocal_ln"
 
-# The name of the MS Acccess table that holds the road observation data
-table_name = "obs"
+# A list of the names of the MS Acccess tables that holds the road observation data
+table_names = ["HikerWaitTime", "OtherStop", "RestStop", "WildlifeNoStop", "WildlifeStop"]
 
-# The name of the unique id field in the MS Access table
-id_field_name = "ID"
+# This tool assumes that all the tables listed above are in the same database file,
+# And that all the tables have the same 4 columns listed below.
 
-# The name of the latitude field in the MS Access table
-latitude_field_name = "Lat"
+# The name of the unique id field in the MS Access table. 
+id_field_name = "Point_ID"
 
-# The name of the longitude field in the MS Access table
-longitude_field_name = "Lon"
+# The name of the latitude field in the MS Access table. Should be a double
+latitude_field_name = "Latitude"
 
-# The name of the milepost field in the MS Access table
-milepost_field_name = "MP"
+# The name of the longitude field in the MS Access table. Should be a double
+longitude_field_name = "Longitude"
+
+# The name of the milepost field in the MS Access table. Should be a double
+milepost_field_name = "MilePost"
 
 # This is the ObjectID of the linear feature in the 'road_fc' that is used
 # for linear referencing the mile posts along the road center
@@ -51,6 +57,11 @@ road_id = 4
 # the value of the starting mile.
 # The starting mile can be positive or negative.
 road_start_mile = 0
+
+# This is the search radius for linear referencing points
+# If the point is not within this distance of the park road
+# the point will be not get a milepost.
+search_radius = "100 meters"
 
 #############################
 # End Configuration Options (do not edit below this line)
@@ -122,55 +133,63 @@ if not road:
     print("The road feature was not found ({0} in {1})".format(id,road_fc))
     sys.exit()
 
-print(road)
-print(road.getPart()[0][0])
-
-# FIXME - what about projection issues
-
 ############################
 # End Environment validation
 ############################
 
-def GetMmax(geom):  
-    # get the max(M) from a geometry  
-    mmax = -9999  
-    for part in geom.getPart():  
-        for point in part:  
-            m = point.M 
-            if m > mmax:  
-                mmax = m  
-    return mmax  
+def calculate(pts, line, start = 0, search_radius = "100 Meters"):
+    # pts = sequence of (id,lat,lon)
+    # line = linear feature class with routes (linear referencing)
+    rid = "ROUTE"
+    props = "ID POINT MP"
+    tbl = "in_memory/results"
+    srs = arcpy.SpatialReference(4326) #WGS84
+    pt_fc = arcpy.CreateFeatureclass_management("in_memory", "pt_fc", "POINT", "", "DISABLED", "DISABLED", srs)
+    arcpy.AddField_management(pt_fc,"OBS_ID","Long")
+    with arcpy.da.InsertCursor(pt_fc, ["OBS_ID","SHAPE@XY"]) as in_cursor:
+        for pt in pts:
+            in_cursor.insertRow([pt[0],(pt[2],pt[1])])
+    arcpy.LocateFeaturesAlongRoutes_lr(pt_fc, road_fc, rid, search_radius, tbl, props)
+    with arcpy.da.SearchCursor('in_memory\\results',['OBS_ID','MP']) as out_cursor:
+        mileposts = dict(out_cursor)
+    if start != 0:
+        for id in mileposts:
+            mileposts[id] = mileposts[id] + start
+    arcpy.Delete_management(tbl)
+    arcpy.Delete_management(pt_fc)
+    return mileposts
 
 
-def calculate(lat, lon, line, start):
-	GetMmax(line)
+for table_name in table_names:
+    print("Processing Table {0} ...".format(table_name))
+    # Get records that need to be updated
+    print("  Finding Road Observations to Update...")
+    sql = ("SELECT {0},{2},{3} FROM {4} " + 
+           "WHERE {1} IS NULL AND {2} IS NOT NULL AND {3} IS NOT NULL")
+    sql = sql.format(id_field_name, milepost_field_name, latitude_field_name,
+                     longitude_field_name, table_name)
 
-# Get records that need to be updated
-print("Finding Road Observations to Update...")
-rcursor = pyodbc.connect(connection).cursor()
-sql = ("SELECT {0},{2},{3} FROM {4} " + 
-       "WHERE {1} IS NULL AND {2} IS NOT NULL AND {3} IS NOT NULL")
-sql = sql.format(id_field_name, milepost_field_name, latitude_field_name,
-                 longitude_field_name, table_name)
-                 
-mileposts = {}
-rows = rcursor.execute(sql).fetchall()
-print("Calculating {0} Road Observations".format(len(rows)), end="")
-for row in rows:
-    id = row[0]
-    latitude = row[1]
-    longitude = row[2]
-    new_milepost = calculate(latitude, longitude, road, road_start_mile)
-    mileposts[id] = new_milepost
-    print(".", end="")
+    rcursor = None
+    try:
+        rcursor = pyodbc.connect(connection).cursor()
+        pass
+    except pyodbc.Error as e:
+        print("Rats!!  Unable to connect to your database.")
+        print("Contact Regan (regan_sarwas@nps.gov) for assistance.")
+        print("  Connection: " + connection)
+        print("  Error: " + e[1])
+        sys.exit()
+    rows = rcursor.execute(sql).fetchall()
 
-print("\nUpdating Database...")
-wcursor = pyodbc.connect(connection).cursor()
-for id in mileposts:
-    sql = "UPDATE {0} SET {1} = {2} WHERE {3} = {4}"
-    sql = sql.format(table_name, milepost_field_name, mileposts[id],
-	                 id_field_name, id)
-    print(sql)
-    wcursor.execute(sql)
-wcursor.commit()
-	
+    print("  Calculating {0} Road Observations".format(len(rows)))
+    mileposts = calculate(rows, road, road_start_mile, search_radius)
+
+    print("\n  Updating Database...")
+    wcursor = pyodbc.connect(connection).cursor()
+    for id in mileposts:
+        sql = "UPDATE {0} SET {1} = {2} WHERE {3} = {4}"
+        sql = sql.format(table_name, milepost_field_name, mileposts[id],
+                         id_field_name, id)
+        #print(sql)
+        wcursor.execute(sql)
+    wcursor.commit()
