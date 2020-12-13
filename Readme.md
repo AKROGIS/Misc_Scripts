@@ -24,6 +24,18 @@ numbers into the Denali road observation database for records that
 have a lat/long but no milepost. The data paths are hardcoded in the
 script so edit before using.
 
+## Email Splitter for Joel
+
+Per Joel Cusick, when exporting multiple email messages from MS Outlook they are
+concatenated into a single file.  Joel needs them to be individual files so they
+can be processed.  He gets these emails frequently, and it is tedious to export
+them individually.
+
+To use, edit the CONFIG properties to point to your input/output locations.
+The script will fail if any of the paths in the CONFIG do not
+exist, or if there are read or write permissions.  If there
+is a failure, just edit the CONFIG and try again.
+
 ## Fish Data Collation
 
 A script for Dan Young that summarizes the fish counts in a sonar
