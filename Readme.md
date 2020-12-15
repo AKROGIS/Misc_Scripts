@@ -44,6 +44,15 @@ understood.  Eventually 100s of theses sonar files were loaded into
 the [LACL Fish Database](https://github.com/AKROGIS/LACL_Fish#phase-2-sonar)
 for summarization in a database table.
 
+## git tools
+
+A few windows batch files for batch processing git repos. These tools
+require that git is in the command path (which is done if GitHub and/or
+Git for Windows is installed). I usually install these in the folder
+where all my local git repos are.  `check-repos.cmd` is particullarly
+helpful in finding any unpublished local branches, unpublished commits,
+and uncommitted changes in ALL repos.
+
 ## Mosaic Datasets
 
 This was a tool written to understand the inter-relation between mosaic
