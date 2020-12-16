@@ -10,6 +10,14 @@ best I could.  See the code for additional details on use the scripts.
 Most of the scripts were written for python 2.7 and may not work correctly
 with python 3.x
 
+## copyfiles.py
+
+A script to read a list of zip files from a CSV; copy the zip files
+to a local folder, and unzip the files into a folder structure based
+on attributes of the record in the CSV.  This script is specific to a
+data publishing request by DENA and the CSV file they provided, but it
+could easily be adapted to a similar problem.
+
 ## Creating Quadrat Corners
 
 A python script for Sarah Venator that reads records in a CSV with 3D
