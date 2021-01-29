@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Reads records in a CSV with 3D location of two opposite corners of
 a square and calculates the two missing corners to create a polygon
@@ -21,8 +22,11 @@ Site,Name,Team,Quad,FeatureCod,Easting,Northing,Orth_Elev,LocalLatit,LocalLongi,
 19,19_TA_QU02,A,2,QUAD_C1,493331.5725,581496.7227,-1.771056,59.222591,-154.116789,10.469926,0.013561,0.016915,5/15/2018,9:45:53 AM
 """
 
-import math
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import csv
+import math
+
 
 def corners(p1,p3):
     delta = (p3[0]-p1[0], p3[1]-p1[1])

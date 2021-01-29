@@ -1,9 +1,17 @@
+# -*- coding: utf-8 -*-
+"""
+Create a list (CSV) of all mosaic datasets in Theme Manager and reference datasets.
+"""
+
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 from io import open
-import sys
 import os
-import arcpy
-import arcpy.da
+import sys
 import xml.etree.ElementTree as et
+
+import arcpy
+
 
 theme_manager_path = r"X:\GIS\ThemeMgr\AKR Theme List.tml"
 output_filename = r"mosaic_dataset_files.csv"
@@ -36,7 +44,7 @@ mosaic_datasets = []
 xmlroot = et.parse(theme_manager_path).getroot()
 for data in xmlroot.iter('data'):
     if data.get('datasettype') == 'MosaicDataset':
-        #print data.get('datasource')
+        #(data.get('datasource'))
         mosaic_datasets.append(data.get('datasource'))
 
 # Add referenced datasets
@@ -48,7 +56,7 @@ for referencing, referenced in referencing_mosaic_datasets.iteritems():
 
 gdb = arcpy.env['scratchGDB']
 arcpy.env.workspace = gdb
-#print gdb, arcpy.env.workspace
+#print(gdb, arcpy.env.workspace)
 results = {}
 for dataset in mosaic_datasets:
     # Skip duplicate datasets
@@ -57,7 +65,7 @@ for dataset in mosaic_datasets:
     # Skip Referenced Mosaic Dataset
     try:
         if arcpy.Describe(dataset).referenced:
-            print "{0} is a Referenced Mosaic Dataset. Skipping.".format(dataset)
+            print("{0} is a Referenced Mosaic Dataset. Skipping.".format(dataset))
             # TODO: find the source of the referenced dataset
             continue
     except:
@@ -65,11 +73,11 @@ for dataset in mosaic_datasets:
     
     name = arcpy.CreateScratchName("temp", data_type="Dataset")
     table = os.path.join(gdb,name)
-    #print table
+    #print(table)
     try:
         arcpy.ExportMosaicDatasetPaths_management(dataset,table)
     except:  # catch *all* exceptions
-        print "  **ERROR** reading dataset {0}\n{1}".format(dataset,sys.exc_info()[1])
+        print("  **ERROR** reading dataset {0}\n{1}".format(dataset,sys.exc_info()[1]))
     if arcpy.Exists(table):    
         results[dataset] = {}
         with arcpy.da.SearchCursor(table,"Path") as cursor:
@@ -80,7 +88,7 @@ for dataset in mosaic_datasets:
                         results[dataset][path] = set()
                     results[dataset][path].add(file)
                 except:  # catch *all* exceptions
-                    print "  **ERROR** reading row {0}\n{1}".format(row[0],sys.exc_info()[1])
+                    print("  **ERROR** reading row {0}\n{1}".format(row[0],sys.exc_info()[1]))
 
 with open(output_filename,'w', encoding="utf-8") as f:
     f.write("mosaic_path,mosaic_name,ref_path,ref_name\n")

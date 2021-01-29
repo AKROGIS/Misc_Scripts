@@ -1,10 +1,14 @@
+# -*- coding: utf-8 -*-
 """
 Looks at a bunch of metadata files in a several folders and reports on the
-various values found for a specific keyword
+various values found for a specific keyword.
 """
+
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 from io import open
 import os
+
 
 dsm = r'\\INPAKROVMDIST\GISData2\Extras\AKR\Statewide\DEM\NPRA-IfSAR_Intermap_2002\DSM'
 dtm = r'\\INPAKROVMDIST\GISData2\Extras\AKR\Statewide\DEM\NPRA-IfSAR_Intermap_2002\DTM'

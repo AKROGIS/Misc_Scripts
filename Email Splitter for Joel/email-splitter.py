@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 2020-12-12  Regan Sarwas
 
@@ -14,7 +15,11 @@ is a failure, just edit the CONFIG and try again.
 Tested with Python 2.7 and Python 3.8
 """
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 from io import open
+import os
+
 
 CONFIG = {
     # The path and name of the input file
@@ -30,7 +35,6 @@ CONFIG = {
     'basename': 'opus-email-',
 }
 
-import os
 
 def write(lines, counter):
     filename = "{0}{1}.txt".format(CONFIG['basename'], counter)

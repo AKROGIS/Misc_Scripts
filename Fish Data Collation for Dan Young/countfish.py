@@ -1,7 +1,17 @@
+# -*- coding: utf-8 -*-
+"""
+Summarizes the fish counts in a sonar file as CSV data.
+"""
+
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 from io import open
+
 
 in_file = 'c:/tmp/dan/sample.txt'
 out_file = 'c:/tmp/dan/output.csv'
+
+
 fish = {}
 in_data_section = False
 for line in open(in_file,'r', encoding="utf-8"):

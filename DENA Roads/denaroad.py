@@ -1,12 +1,19 @@
+# -*- coding: utf-8 -*-
 """
 Adds milepost numbers into the Denali road observation database for
 records that have a lat/long but no milepost.
-The data paths are hardcoded in this file, so edit before using
+The data paths are hardcoded in this file, so edit before using.
+
+Third party requirements:
+* pyodbc - https://pypi.org/project/pyodbc/
+* arcpy - Installed with ArcGIS
 """
 
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import os
 import sys
+
 
 #############################
 # Start Configuration Options
@@ -95,9 +102,7 @@ try:
     import pyodbc                     
 except ImportError:
     print("You must install the pyodbc extension for python. " +
-          "Get it at https://code.google.com/p/pyodbc/ " + 
-          "Be sure to get the 32bit version for python 2.7 " +
-          "for example pyodbc-x.x.x.win32-py2.7.exe")
+          "Get it at https://pypi.org/project/pyodbc/)
     sys.exit()
 
 # Try loading required ArcGIS module

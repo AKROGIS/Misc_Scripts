@@ -1,15 +1,22 @@
-#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Creates a CSV list of photos (and select metadata) for all photos in a folder.
 
-"""Creates a CSV list of photos (and select metadata) for all photos in a folder"""
+author = "Regan Sarwas, GIS Team, Alaska Region, National Park Service"
+email = "regan_sarwas@nps.gov"
+copyright = "Public Domain - product of the US Government"
 
-__author__ = "Regan Sarwas, GIS Team, Alaska Region, National Park Service"
-__email__ = "regan_sarwas@nps.gov"
-__copyright__ = "Public Domain - product of the US Government"
+Third party requirements:
+* exifread - https://pypi.python.org/pypi/ExifRead
+"""
+
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 from io import open
 import os
-import datetime
-import exifread   # https://pypi.python.org/pypi/ExifRead
+
+import exifread
+
 
 # Look for photos in the script folder
 root = os.path.dirname(os.path.abspath(__file__))

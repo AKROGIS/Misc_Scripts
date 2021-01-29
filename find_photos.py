@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 Walk the SEARCH_FOLDER and write the path of any file with an extension in
 EXTENSIONS to the file OUT_LIST.
