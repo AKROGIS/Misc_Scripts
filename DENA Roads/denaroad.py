@@ -102,7 +102,7 @@ try:
     import pyodbc                     
 except ImportError:
     print("You must install the pyodbc extension for python. " +
-          "Get it at https://pypi.org/project/pyodbc/)
+          "Get it at https://pypi.org/project/pyodbc/")
     sys.exit()
 
 # Try loading required ArcGIS module
