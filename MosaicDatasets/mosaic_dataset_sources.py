@@ -1,3 +1,4 @@
+from io import open
 import sys
 import os
 import arcpy
@@ -81,7 +82,7 @@ for dataset in mosaic_datasets:
                 except:  # catch *all* exceptions
                     print "  **ERROR** reading row {0}\n{1}".format(row[0],sys.exc_info()[1])
 
-with open(output_filename,'w') as f:
+with open(output_filename,'w', encoding="utf-8") as f:
     f.write("mosaic_path,mosaic_name,ref_path,ref_name\n")
     for dataset in results:
         ds_path, ds_name = os.path.split(dataset)

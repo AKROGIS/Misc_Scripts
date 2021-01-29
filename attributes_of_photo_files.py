@@ -6,6 +6,7 @@ __author__ = "Regan Sarwas, GIS Team, Alaska Region, National Park Service"
 __email__ = "regan_sarwas@nps.gov"
 __copyright__ = "Public Domain - product of the US Government"
 
+from io import open
 import os
 import datetime
 import exifread   # https://pypi.python.org/pypi/ExifRead
@@ -16,7 +17,7 @@ root = os.path.dirname(os.path.abspath(__file__))
 #root = "/Users/regan_sarwas/Desktop/photos/"
 csv = os.path.join(root, "PhotoList.csv")
 
-with open(csv, 'w') as f:
+with open(csv, 'w', encoding="utf-8") as f:
     f.write('folder,photo,exifdate,lat,lon,gpsdate,filedate\n')
     for filename in os.listdir(root):
         base, extension = os.path.splitext(filename)
@@ -24,6 +25,7 @@ with open(csv, 'w') as f:
             path = os.path.join(root, filename)
             lat, lon, exifdate, gpsdate = '', '', '', ''
             with open(path, 'rb') as pf:
+                # exifread wants binary data
                 tags = exifread.process_file(pf, details=False)
                 try:
                     dms = tags['GPS GPSLatitude'].values

@@ -1,8 +1,10 @@
+from io import open
+
 in_file = 'c:/tmp/dan/sample.txt'
 out_file = 'c:/tmp/dan/output.csv'
 fish = {}
 in_data_section = False
-for line in open(in_file,'r'):
+for line in open(in_file,'r', encoding="utf-8"):
     if in_data_section == False and line.startswith('-----------------'):
         in_data_section = True
         continue
@@ -13,7 +15,7 @@ for line in open(in_file,'r'):
         if date not in fish:
             fish[date] = 0
         fish[date] += 1
-f = open(out_file,'w')
+f = open(out_file,'w', encoding="utf-8")
 f.write('datetime,count\n')
 for date,count in sorted(fish.items()):
     f.write(date+ ','+str(count)+'\n')

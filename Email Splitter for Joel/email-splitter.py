@@ -14,6 +14,8 @@ is a failure, just edit the CONFIG and try again.
 Tested with Python 2.7 and Python 3.8
 """
 
+from io import open
+
 CONFIG = {
     # The path and name of the input file
     # the file should contain a concatenation ion of emails from a single addressee
@@ -33,12 +35,12 @@ import os
 def write(lines, counter):
     filename = "{0}{1}.txt".format(CONFIG['basename'], counter)
     filename = os.path.join(CONFIG['folder'], filename)
-    with open(filename, 'w') as f2:
+    with open(filename, 'w', encoding="utf-8") as f2:
         #for line in lines:
         f2.writelines(lines)
 
 
-with open(CONFIG['input'], 'r') as f:
+with open(CONFIG['input'], 'r', encoding="utf-8") as f:
     lines = []
     counter = 1
     for line in f:

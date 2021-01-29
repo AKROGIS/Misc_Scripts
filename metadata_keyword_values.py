@@ -3,6 +3,7 @@ Looks at a bunch of metadata files in a several folders and reports on the
 various values found for a specific keyword
 """
 
+from io import open
 import os
 
 dsm = r'\\INPAKROVMDIST\GISData2\Extras\AKR\Statewide\DEM\NPRA-IfSAR_Intermap_2002\DSM'
@@ -17,7 +18,7 @@ for dir in [dsm, dtm, ori]:
         ext = os.path.splitext(name)[1].lower()
         if os.path.isfile(name) and ext == '.txt' :
             date = 'none'
-            with open(name) as f:
+            with open(name, "r", encoding="utf-8") as f:
                 for line in f:
                     if line.startswith(prefix):
                         date = line.replace(prefix,'').strip()
