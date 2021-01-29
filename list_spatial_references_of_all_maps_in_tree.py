@@ -5,6 +5,7 @@ in each map (*.mxd) file found.
 
 Third party requirements:
 * requests - https://pypi.org/project/requests/
+* arcpy - Installed with ArcGIS
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals

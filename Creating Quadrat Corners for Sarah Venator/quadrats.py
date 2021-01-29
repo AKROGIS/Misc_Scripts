@@ -20,6 +20,9 @@ Site,Name,Team,Quad,FeatureCod,Easting,Northing,Orth_Elev,LocalLatit,LocalLongi,
 19,19_TA_QL01,A,1,QUAD_C2,493338.8142,581494.9555,-1.655107,59.222575,-154.116662,10.585469,0.013476,0.017026,5/15/2018,9:38:54 AM
 19,19_TA_QL02,A,2,QUAD_C2,493332.2278,581497.0564,-1.776223,59.222594,-154.116777,10.464726,0.013578,0.016955,5/15/2018,9:45:20 AM
 19,19_TA_QU02,A,2,QUAD_C1,493331.5725,581496.7227,-1.771056,59.222591,-154.116789,10.469926,0.013561,0.016915,5/15/2018,9:45:53 AM
+
+Third party requirements:
+* arcpy - Installed with ArcGIS
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals

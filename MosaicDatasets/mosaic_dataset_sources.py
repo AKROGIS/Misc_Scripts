@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 Create a list (CSV) of all mosaic datasets in Theme Manager and reference datasets.
+
+Third party requirements:
+* arcpy - Installed with ArcGIS
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals
