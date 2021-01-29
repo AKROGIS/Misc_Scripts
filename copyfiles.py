@@ -28,7 +28,7 @@ def open_csv_read(filename):
 def main():
     """ Just do it """
     with open_csv_read(CSVNAME) as handle:
-        handle.readline()   # remove header
+        handle.readline()  # remove header
         csvreader = csv.reader(handle)
         for row in csvreader:
             if sys.version_info[0] < 3:
@@ -51,7 +51,7 @@ def main():
 def unzip():
     """ Just do it """
     with open_csv_read(CSVNAME) as handle:
-        handle.readline()   # remove header
+        handle.readline()  # remove header
         csvreader = csv.reader(handle)
         for row in csvreader:
             if sys.version_info[0] < 3:
@@ -72,9 +72,9 @@ def unzip():
                 except WindowsError:
                     print("Failed to create dir", dest)
                     continue
-                with zipfile.ZipFile(local, 'r') as zip_ref:
+                with zipfile.ZipFile(local, "r") as zip_ref:
                     zip_ref.extractall(dest)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unzip()

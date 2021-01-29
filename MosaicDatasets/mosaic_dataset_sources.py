@@ -23,8 +23,8 @@ referencing_mosaic_datasets = {
     r"X:\Albers\parks\gaar\LIDAR\PipelineLiDAR\CorridorGAAR.gdb\HillshadeDSM": r"X:\Albers\parks\gaar\LIDAR\PipelineLiDAR\CorridorGAAR.gdb\HighestHitDSM",
     r"X:\Albers\parks\gaar\LIDAR\PipelineLiDAR\CorridorGAAR.gdb\HillshadeDTM": r"X:\Albers\parks\gaar\LIDAR\PipelineLiDAR\CorridorGAAR.gdb\BareEarthDTM",
     r"X:\Albers\parks\gaar\Imagery\NDVI_GAAR.gdb\GaarFinalNDVI": r"X:\IKONOS\NWAK\IKONOS_GAAR.gdb\GaarFinal",
-    r"X:\Albers\parks\gaar\AmblerRoad\AmblerRdDEM.gdb\BareEarth5ft_SR_REF":"",
-    r"X:\Albers\parks\gaar\AmblerRoad\AmblerRdDEM.gdb\BareEarth5ft_HS_REF":"",
+    r"X:\Albers\parks\gaar\AmblerRoad\AmblerRdDEM.gdb\BareEarth5ft_SR_REF": "",
+    r"X:\Albers\parks\gaar\AmblerRoad\AmblerRdDEM.gdb\BareEarth5ft_HS_REF": "",
     r"X:\Albers\UTM8\glba\SDMI\IFSAR.gdb\REF_DTM_Aspect": r"X:\Albers\UTM8\glba\SDMI\IFSAR.gdb\DTM",
     r"X:\Albers\UTM8\glba\SDMI\IFSAR.gdb\REF_DSM_SR": r"X:\Albers\UTM8\glba\SDMI\IFSAR.gdb\DSM",
     r"X:\Albers\UTM8\glba\SDMI\IFSAR.gdb\REF_DSM_HS": r"X:\Albers\UTM8\glba\SDMI\IFSAR.gdb\DSM",
@@ -37,18 +37,18 @@ referencing_mosaic_datasets = {
     r"X:\DEM\SDMI\DEM_REF.gdb\DSM_SR": r"X:\DEM\SDMI\IFSARDEM.gdb\DSM",
     r"X:\DEM\SDMI\DEM_REF.gdb\DTM_HS": r"X:\DEM\SDMI\IFSARDEM.gdb\DTM",
     r"X:\DEM\SDMI\DEM_REF.gdb\DTM_SR": r"X:\DEM\SDMI\IFSARDEM.gdb\DTM",
-    r"X:\Albers\parks\lacl\LiDAR\Kijik2013\LACLKijik.gdb\DEMHydFlat_HS_Ref":"",
-    r"X:\Albers\parks\lacl\LiDAR\Kijik2013\LACLKijik.gdb\DEMHydFlat_SR_Ref":"",
-    r"X:\Albers\parks\lacl\LiDAR\Kijik2013\LACLKijik.gdb\DEMHydEnf_HS_Ref":"",
-    r"X:\Albers\parks\lacl\LiDAR\Kijik2013\LACLKijik.gdb\DEMHydEnf_SR_Ref":"",
+    r"X:\Albers\parks\lacl\LiDAR\Kijik2013\LACLKijik.gdb\DEMHydFlat_HS_Ref": "",
+    r"X:\Albers\parks\lacl\LiDAR\Kijik2013\LACLKijik.gdb\DEMHydFlat_SR_Ref": "",
+    r"X:\Albers\parks\lacl\LiDAR\Kijik2013\LACLKijik.gdb\DEMHydEnf_HS_Ref": "",
+    r"X:\Albers\parks\lacl\LiDAR\Kijik2013\LACLKijik.gdb\DEMHydEnf_SR_Ref": "",
 }
 
 mosaic_datasets = []
 xmlroot = et.parse(theme_manager_path).getroot()
-for data in xmlroot.iter('data'):
-    if data.get('datasettype') == 'MosaicDataset':
-        #(data.get('datasource'))
-        mosaic_datasets.append(data.get('datasource'))
+for data in xmlroot.iter("data"):
+    if data.get("datasettype") == "MosaicDataset":
+        # (data.get('datasource'))
+        mosaic_datasets.append(data.get("datasource"))
 
 # Add referenced datasets
 for referencing, referenced in referencing_mosaic_datasets.iteritems():
@@ -57,9 +57,9 @@ for referencing, referenced in referencing_mosaic_datasets.iteritems():
         mosaic_datasets.append(referenced)
 
 
-gdb = arcpy.env['scratchGDB']
+gdb = arcpy.env["scratchGDB"]
 arcpy.env.workspace = gdb
-#print(gdb, arcpy.env.workspace)
+# print(gdb, arcpy.env.workspace)
 results = {}
 for dataset in mosaic_datasets:
     # Skip duplicate datasets
@@ -73,17 +73,17 @@ for dataset in mosaic_datasets:
             continue
     except:
         continue
-    
+
     name = arcpy.CreateScratchName("temp", data_type="Dataset")
-    table = os.path.join(gdb,name)
-    #print(table)
+    table = os.path.join(gdb, name)
+    # print(table)
     try:
-        arcpy.ExportMosaicDatasetPaths_management(dataset,table)
+        arcpy.ExportMosaicDatasetPaths_management(dataset, table)
     except:  # catch *all* exceptions
-        print("  **ERROR** reading dataset {0}\n{1}".format(dataset,sys.exc_info()[1]))
-    if arcpy.Exists(table):    
+        print("  **ERROR** reading dataset {0}\n{1}".format(dataset, sys.exc_info()[1]))
+    if arcpy.Exists(table):
         results[dataset] = {}
-        with arcpy.da.SearchCursor(table,"Path") as cursor:
+        with arcpy.da.SearchCursor(table, "Path") as cursor:
             for row in cursor:
                 try:
                     path, file = os.path.split(row[0])
@@ -91,12 +91,18 @@ for dataset in mosaic_datasets:
                         results[dataset][path] = set()
                     results[dataset][path].add(file)
                 except:  # catch *all* exceptions
-                    print("  **ERROR** reading row {0}\n{1}".format(row[0],sys.exc_info()[1]))
+                    print(
+                        "  **ERROR** reading row {0}\n{1}".format(
+                            row[0], sys.exc_info()[1]
+                        )
+                    )
 
-with open(output_filename,'w', encoding="utf-8") as f:
+with open(output_filename, "w", encoding="utf-8") as f:
     f.write("mosaic_path,mosaic_name,ref_path,ref_name\n")
     for dataset in results:
         ds_path, ds_name = os.path.split(dataset)
         for ref_path in results[dataset]:
             for ref_name in results[dataset][ref_path]:
-                f.write("{0},{1},{2},{3}\n".format(ds_path, ds_name, ref_path, ref_name))
+                f.write(
+                    "{0},{1},{2},{3}\n".format(ds_path, ds_name, ref_path, ref_name)
+                )

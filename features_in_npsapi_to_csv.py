@@ -16,18 +16,22 @@ import sys
 import requests
 
 
-KEY = 'xxx___YOUR_API_KEY_GOES_HERE___xxx'
-# To get an API Key, See https://www.nps.gov/subjects/developer/get-started.htm 
-STATE = 'ak'
-URL = 'https://developer.nps.gov/api/v1/{0}?stateCode={1}&start={2}&limit={3}&api_key={4}'
+KEY = "xxx___YOUR_API_KEY_GOES_HERE___xxx"
+# To get an API Key, See https://www.nps.gov/subjects/developer/get-started.htm
+STATE = "ak"
+URL = (
+    "https://developer.nps.gov/api/v1/{0}?stateCode={1}&start={2}&limit={3}&api_key={4}"
+)
+
 
 def get_some_items(kind, start=0, limit=50):
     url = URL.format(kind, STATE, start, limit, KEY)
     response = requests.get(url).json()
-    total = int(response['total'])
+    total = int(response["total"])
     end = min(total, start + limit)
-    print('Got {0}-{1} of {2} records for {3}'.format(start, end, total, kind))
-    return response['data']
+    print("Got {0}-{1} of {2} records for {3}".format(start, end, total, kind))
+    return response["data"]
+
 
 def get_all_items(kind):
     all_data = []
@@ -39,6 +43,7 @@ def get_all_items(kind):
         if len(some_data) < limit:
             return all_data
         start += limit
+
 
 # items is a dict keyed with strings
 # keys is a list of strings that are keys in items
@@ -52,6 +57,7 @@ def simplify(item, keys):
         except KeyError:
             d.append(None)
     return d
+
 
 def open_csv_write(filename):
     """Open a file for CSV writing in a Python 2 and 3 compatible way."""
@@ -77,18 +83,20 @@ def write_csv_row(writer, row):
 
 def make_csv(kind, fields):
     data = get_all_items(kind)
-    with open(kind+'.csv') as f:
+    with open(kind + ".csv") as f:
         writer = csv.writer(f)
         write_csv_row(writer, fields)
         for item in data:
             values = simplify(item, fields)
             write_csv_row(writer, values)
 
+
 def main():
     # Features with no lat/long: ['amenities', 'passportstamplocations']
-    features = ['campgrounds', 'places', 'visitorcenters','webcams' ]
-    for feature in features: 
-        make_csv(feature, ['id','title','latitude','longitude','url'])
+    features = ["campgrounds", "places", "visitorcenters", "webcams"]
+    for feature in features:
+        make_csv(feature, ["id", "title", "latitude", "longitude", "url"])
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

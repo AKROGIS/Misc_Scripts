@@ -31,120 +31,143 @@ import csv
 import math
 
 
-def corners(p1,p3):
-    delta = (p3[0]-p1[0], p3[1]-p1[1])
-    diag = math.sqrt(delta[0]**2 + delta[1]**2)
-    l = diag/math.sqrt(2.0)
-    theta = math.atan2(delta[1], delta[0]) # operand order is (y,x)
-    alpha = math.pi/4.0
+def corners(p1, p3):
+    delta = (p3[0] - p1[0], p3[1] - p1[1])
+    diag = math.sqrt(delta[0] ** 2 + delta[1] ** 2)
+    l = diag / math.sqrt(2.0)
+    theta = math.atan2(delta[1], delta[0])  # operand order is (y,x)
+    alpha = math.pi / 4.0
     p2 = (p1[0] + l * math.cos(theta - alpha), p1[1] + l * math.sin(theta - alpha))
     p4 = (p1[0] + l * math.cos(theta + alpha), p1[1] + l * math.sin(theta + alpha))
-    #print(delta, diag, l, theta, alpha)
+    # print(delta, diag, l, theta, alpha)
     return p2, p4, l, 0
 
-def corners3d(p1,p3):
-    delta = (p3[0]-p1[0], p3[1]-p1[1], p3[2]-p1[2])
-    diag = math.sqrt(delta[0]**2 + delta[1]**2 + delta[2]**2)
-    l = diag/math.sqrt(2.0)
-    slope = 100.0*delta[2]/l
-    #print(round(delta[2],2), round(slope,2))
-    theta = math.atan2(delta[1], delta[0]) # operand order is (y,x)
-    alpha = math.pi/4.0
+
+def corners3d(p1, p3):
+    delta = (p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2])
+    diag = math.sqrt(delta[0] ** 2 + delta[1] ** 2 + delta[2] ** 2)
+    l = diag / math.sqrt(2.0)
+    slope = 100.0 * delta[2] / l
+    # print(round(delta[2],2), round(slope,2))
+    theta = math.atan2(delta[1], delta[0])  # operand order is (y,x)
+    alpha = math.pi / 4.0
     p2 = (p1[0] + l * math.cos(theta - alpha), p1[1] + l * math.sin(theta - alpha), 0)
     p4 = (p1[0] + l * math.cos(theta + alpha), p1[1] + l * math.sin(theta + alpha), 0)
-    #print(delta, diag, l, theta, alpha)
+    # print(delta, diag, l, theta, alpha)
     return p2, p4, l, slope
+
 
 def readfile(filename):
     data = {}
-    with open(filename, 'r') as fi:
-        _ = fi.readline() # ignore the header
+    with open(filename, "r") as fi:
+        _ = fi.readline()  # ignore the header
         reader = csv.reader(fi)
         for row in reader:
-            #print(row[2:7])
+            # print(row[2:7])
             site = row[0]
             team = row[2]
             quad = row[3]
-            name = site+'|'+team+str(quad)
+            name = site + "|" + team + str(quad)
             corner = int(row[4][-1:])
             if corner != 1 and corner != 2:
-                print(site,team, name, name, corner)
+                print(site, team, name, name, corner)
                 continue
             x = float(row[5])
             y = float(row[6])
             z = float(row[7])
             if name not in data:
-                data[name] = {corner:(x,y,z)}
+                data[name] = {corner: (x, y, z)}
             else:
-                data[name][corner] = (x,y,z)
+                data[name][corner] = (x, y, z)
     return data
 
-def writedata(filename,data):
-    with open(filename, 'wb') as fo:
+
+def writedata(filename, data):
+    with open(filename, "wb") as fo:
         writer = csv.writer(fo)
-        header = ['Site','Team','Quad','Corner','Easting','Northing','SideLength','Slope(%)']
+        header = [
+            "Site",
+            "Team",
+            "Quad",
+            "Corner",
+            "Easting",
+            "Northing",
+            "SideLength",
+            "Slope(%)",
+        ]
         writer.writerow(header)
         for name in sorted(data.keys()):
-            site,teamquad = name.split('|')
+            site, teamquad = name.split("|")
             team = teamquad[:1]
             quad = teamquad[1:]
             if 1 in data[name]:
                 p1 = data[name][1]
             else:
-                print('Error Corner 1 not found in ' + name)
+                print("Error Corner 1 not found in " + name)
                 continue
             if 2 in data[name]:
                 p3 = data[name][2]
             else:
-                print('Error Corner 2 not found in ' + name)
+                print("Error Corner 2 not found in " + name)
                 continue
             p2, p4, l, slope = corners3d(p1, p3)
-            writer.writerow([site, team, quad, 3, p2[0], p2[1], round(l,3), round(slope,3)])
-            writer.writerow([site, team, quad, 4, p4[0], p4[1], round(l,3), round(slope,3)])
-            #shape = [p1,p2,p3,p4,p1]
-            #write_feature([team, quad, l, shape)
+            writer.writerow(
+                [site, team, quad, 3, p2[0], p2[1], round(l, 3), round(slope, 3)]
+            )
+            writer.writerow(
+                [site, team, quad, 4, p4[0], p4[1], round(l, 3), round(slope, 3)]
+            )
+            # shape = [p1,p2,p3,p4,p1]
+            # write_feature([team, quad, l, shape)
 
-def writefc(fcname,data):
+
+def writefc(fcname, data):
     # Create new FGDB, and polygon FC with projection AK StatePlane 5 meters (nad83)
-    # Create the following fields, text, except SideLength and Slope are Double 
+    # Create the following fields, text, except SideLength and Slope are Double
     import arcpy
-    fields = ['Site','Team','Quad','SideLength','Slope','SHAPE@']
+
+    fields = ["Site", "Team", "Quad", "SideLength", "Slope", "SHAPE@"]
     cursor = arcpy.da.InsertCursor(fcname, fields)
     for name in sorted(data.keys()):
-        site,teamquad = name.split('|')
+        site, teamquad = name.split("|")
         team = teamquad[:1]
         quad = teamquad[1:]
         p1 = data[name][1]
         p3 = data[name][2]
         p2, p4, l, slope = corners3d(p1, p3)
-        points = [p1,p2,p3,p4,p1]
+        points = [p1, p2, p3, p4, p1]
         shape = arcpy.Polygon(arcpy.Array([arcpy.Point(*coords) for coords in points]))
-        cursor.insertRow((site,team,quad,l,slope,shape))
+        cursor.insertRow((site, team, quad, l, slope, shape))
     del cursor
 
+
 def test1():
-    p1 = (3,2)
-    p3 = (7,6)
+    p1 = (3, 2)
+    p3 = (7, 6)
     p2, p4, l = corners(p1, p3)
     print(p1, p2, p3, p4, l)
 
+
 def test2():
-    p1 = (3,1,0)
-    p3 = (6,5,5)
+    p1 = (3, 1, 0)
+    p3 = (6, 5, 5)
     p2, p4, l = corners3d(p1, p3)
     print(p1, p2, p3, p4, l)
 
+
 def test3():
-    filename = '/Users/RESarwas/Downloads/All_Quadrats_V2'
-    data = readfile(filename + '.csv')
-    writedata(filename + '_out.csv',data)
+    filename = "/Users/RESarwas/Downloads/All_Quadrats_V2"
+    data = readfile(filename + ".csv")
+    writedata(filename + "_out.csv", data)
+
 
 def test4():
-    filename = '/Users/RESarwas/Downloads/All_Quadrats_V2'
-    data = readfile(filename + '.csv')
-    writefc('/tmp/Sarah.gdb/quads',data)
+    filename = "/Users/RESarwas/Downloads/All_Quadrats_V2"
+    data = readfile(filename + ".csv")
+    writefc("/tmp/Sarah.gdb/quads", data)
 
-#test1()
-#test2()
-#test3()
+
+# test1()
+# test2()
+# test3()
 test4()

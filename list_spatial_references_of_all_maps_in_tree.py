@@ -16,8 +16,8 @@ import os
 import arcpy.mapping
 
 
-results = r'c:\tmp\sr.csv'
-start = r'c:\tmp\Changing Tides'
+results = r"c:\tmp\sr.csv"
+start = r"c:\tmp\Changing Tides"
 
 
 def open_csv_write(filename):
@@ -44,21 +44,25 @@ def write_csv_row(writer, row):
 
 with open_csv_write(results) as f:
     csv_writer = csv.writer(f)
-    header = ['mxd','data_frame','spatial_reference']
+    header = ["mxd", "data_frame", "spatial_reference"]
     write_csv_row(csv_writer, header)
     csv_writer.writerow()
     for root, dirs, files in os.walk(start):
         for file in files:
-            if os.path.splitext(file)[1].lower() == '.mxd':
+            if os.path.splitext(file)[1].lower() == ".mxd":
                 suspect = os.path.join(root, file)
-                print('Checking {}'.format(suspect))
+                print("Checking {}".format(suspect))
                 try:
                     mxd = arcpy.mapping.MapDocument(suspect)
                     for df in arcpy.mapping.ListDataFrames(mxd):
-                        print('  data frame {0} has spatial reference: {1}'.format(df.name, df.spatialReference.name))
+                        print(
+                            "  data frame {0} has spatial reference: {1}".format(
+                                df.name, df.spatialReference.name
+                            )
+                        )
                         row = [suspect, df.name, df.spatialReference.name]
                         write_csv_row(csv_writer, row)
                 except:
-                    print('ERROR: Unable to check document')
-                    row = [suspect, 'ERROR', 'ERROR']
+                    print("ERROR: Unable to check document")
+                    row = [suspect, "ERROR", "ERROR"]
                     write_csv_row(csv_writer, row)
