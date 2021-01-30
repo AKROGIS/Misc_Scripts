@@ -16,7 +16,7 @@ import csv23
 
 
 class Config(object):
-    """Namespace for configuration parameters. Edit as necessary"""
+    """Namespace for configuration parameters. Edit as necessary."""
 
     # pylint: disable=useless-object-inheritance,too-few-public-methods
 

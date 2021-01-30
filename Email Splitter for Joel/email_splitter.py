@@ -12,6 +12,8 @@ The script will fail if any of the paths in the CONFIG do not
 exist, or if there are read or write permissions.  If there
 is a failure, just edit the CONFIG and try again.
 
+Edit the Config object below as needed for each execution.
+
 Tested with Python 2.7 and Python 3.8
 """
 
@@ -22,7 +24,7 @@ import os
 
 
 class Config(object):
-    """Namespace for configuration parameters."""
+    """Namespace for configuration parameters. Edit as necessary."""
 
     # pylint: disable=useless-object-inheritance,too-few-public-methods
 

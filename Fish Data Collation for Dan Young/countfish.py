@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Summarizes the fish counts in a sonar file as CSV data.
+
+Edit the Config object below as needed for each execution.
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -9,7 +11,7 @@ from io import open
 
 
 class Config(object):
-    """Namespace for configuration parameters."""
+    """Namespace for configuration parameters. Edit as necessary."""
 
     # pylint: disable=useless-object-inheritance,too-few-public-methods
 
