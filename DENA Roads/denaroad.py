@@ -4,6 +4,15 @@ Adds milepost numbers into the Denali road observation database for
 records that have a lat/long but no milepost.
 The data paths are hardcoded in this file, so edit before using.
 
+Edit the Config object below as needed for each execution.
+
+Only tested with 32 Python and 32 bit MS Access on 32bit Windows 7.
+It will not work if Python, pyodbc, and MS Access have different bit size.
+
+This script was intended to be run by end users, and does a lot of very
+specific environment testing that was appropriate for computer setups at the
+time, and will likely need to be changed for future execution.
+
 Third party requirements:
 * pyodbc - https://pypi.org/project/pyodbc/
 * arcpy - Installed with ArcGIS
