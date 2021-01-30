@@ -21,38 +21,51 @@ from io import open
 import os
 
 
-CONFIG = {
+class Config(object):
+    """Namespace for configuration parameters."""
+
+    # pylint: disable=useless-object-inheritance,too-few-public-methods
+
     # The path and name of the input file
     # the file should contain a concatenation ion of emails from a single addressee
-    "input": "C:/tmp/sample.txt",
+    input = "C:/tmp/sample.txt"
+
     # The first line of a new email.
     # A new file will be created each time a line is found that starts with this text
-    "first-line": "From:	opus <opus@ngs.noaa.gov>",
+    first_line = "From:	opus <opus@ngs.noaa.gov>"
+
     # The full path to the folder where the output files will be created
-    "folder": "C:/tmp",
+    folder = "C:/tmp"
+
     # The name of the output file
     # Each file will get a sequential numerical suffix and a .txt extension
-    "basename": "opus-email-",
-}
+    basename = "opus-email-"
 
 
 def write(lines, counter):
-    filename = "{0}{1}.txt".format(CONFIG["basename"], counter)
-    filename = os.path.join(CONFIG["folder"], filename)
-    with open(filename, "w", encoding="utf-8") as f2:
+    """Write the lines to file #counter."""
+    filename = "{0}{1}.txt".format(Config.basename, counter)
+    filename = os.path.join(Config.folder, filename)
+    with open(filename, "w", encoding="utf-8") as out_file:
         # for line in lines:
-        f2.writelines(lines)
+        out_file.writelines(lines)
 
 
-with open(CONFIG["input"], "r", encoding="utf-8") as f:
-    lines = []
-    counter = 1
-    for line in f:
-        if line.startswith(CONFIG["first-line"]):
-            if lines:
-                write(lines, counter)
-                counter += 1
-            lines = []
-        lines.append(line)
-    if lines:
-        write(lines, counter)
+def main():
+    """Open the input file and split it into individual emails."""
+    with open(Config.input, "r", encoding="utf-8") as in_file:
+        lines = []
+        counter = 1
+        for line in in_file:
+            if line.startswith(Config.first_line):
+                if lines:
+                    write(lines, counter)
+                    counter += 1
+                lines = []
+            lines.append(line)
+        if lines:
+            write(lines, counter)
+
+
+if __name__ == "__main__":
+    main()
