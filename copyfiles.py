@@ -57,7 +57,7 @@ def main():
 
 def unzip():
     """ Just do it """
-    with csv23.open(csv_path, "r") as handle:
+    with csv23.open(Config.csv_path, "r") as handle:
         handle.readline()  # remove header
         csvreader = csv.reader(handle)
         for row in csvreader:

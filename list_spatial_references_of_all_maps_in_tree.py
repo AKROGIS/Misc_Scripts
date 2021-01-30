@@ -19,6 +19,7 @@ import arcpy.mapping
 
 import csv23
 
+
 class Config(object):
     """Namespace for configuration parameters. Edit as needed."""
 

@@ -45,6 +45,7 @@ class Config(object):
     source_template = r"C:\tmp\RemoteServers\XDrive-{0}\Mosaics\LACL\{1}"
     destination_template = r"C:\tmp\RemoteServers\XDrive-{0}\Trash\{2}\Mosaics~LACL~{1}"
 
+
 for park in Config.parks:
     for folder in Config.folders:
         SRC = Config.source_template.format(park, folder)

@@ -17,6 +17,7 @@ import requests
 
 import csv23
 
+
 class Config(object):
     """Namespace for configuration parameters. Edit as necessary"""
 
@@ -35,9 +36,7 @@ class Config(object):
     fields = ["id", "title", "latitude", "longitude", "url"]
 
     # Location of the web service
-    url = (
-        "https://developer.nps.gov/api/v1/{0}?stateCode={1}&start={2}&limit={3}&api_key={4}"
-    )
+    url = "https://developer.nps.gov/api/v1/{0}?stateCode={1}&start={2}&limit={3}&api_key={4}"
 
 
 def get_some_items(kind, start=0, limit=50):

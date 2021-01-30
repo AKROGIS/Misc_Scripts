@@ -10,13 +10,16 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from io import open
 import os
 
+
 class Config(object):
     """Namespace for configuration parameters. Edit as necessary."""
 
     # pylint: disable=useless-object-inheritance,too-few-public-methods
 
     out_list = r"C:\tmp\list2.txt"
-    search_folder = r"T:\PROJECTS\AKR\FMSS\TRAILS\Data\DENA\2015_FMSSMapping\SavageAlpine"
+    search_folder = (
+        r"T:\PROJECTS\AKR\FMSS\TRAILS\Data\DENA\2015_FMSSMapping\SavageAlpine"
+    )
     extensions = [".jpg", ".jpeg"]
 
 

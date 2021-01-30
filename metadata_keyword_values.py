@@ -22,6 +22,7 @@ class Config(object):
     ORI = r"\\INPAKROVMDIST\GISData2\Extras\AKR\Statewide\DEM\NPRA-IfSAR_Intermap_2002\ORI"
     prefix = "        Beginning_Date: "
 
+
 def find_metadata():
     """Find all the metadata values matching the Config parameters."""
 
@@ -43,7 +44,7 @@ def find_metadata():
                 dates[date] = dates[date] + 1
         print("Stats for {0}".format(folder[-3:]))
         for key in sorted(dates.keys()):
-            print("  {0}:{1}".format(key,dates[key]))
+            print("  {0}:{1}".format(key, dates[key]))
 
 
 if __name__ == "__main__":
