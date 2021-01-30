@@ -30,6 +30,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import csv
 import math
 
+import csv23
+
 
 def corners(p1, p3):
     delta = (p3[0] - p1[0], p3[1] - p1[1])
@@ -59,10 +61,11 @@ def corners3d(p1, p3):
 
 def readfile(filename):
     data = {}
-    with open(filename, "r") as fi:
+    with csv23.open(filename, "r") as fi:
         _ = fi.readline()  # ignore the header
         reader = csv.reader(fi)
         for row in reader:
+            row = csv23.fix(row)
             # print(row[2:7])
             site = row[0]
             team = row[2]
@@ -83,7 +86,7 @@ def readfile(filename):
 
 
 def writedata(filename, data):
-    with open(filename, "wb") as fo:
+    with csv23.open(filename, "w") as fo:
         writer = csv.writer(fo)
         header = [
             "Site",
@@ -95,7 +98,7 @@ def writedata(filename, data):
             "SideLength",
             "Slope(%)",
         ]
-        writer.writerow(header)
+        csv23.write(writer, header)
         for name in sorted(data.keys()):
             site, teamquad = name.split("|")
             team = teamquad[:1]
@@ -111,12 +114,10 @@ def writedata(filename, data):
                 print("Error Corner 2 not found in " + name)
                 continue
             p2, p4, l, slope = corners3d(p1, p3)
-            writer.writerow(
-                [site, team, quad, 3, p2[0], p2[1], round(l, 3), round(slope, 3)]
-            )
-            writer.writerow(
-                [site, team, quad, 4, p4[0], p4[1], round(l, 3), round(slope, 3)]
-            )
+            row = [site, team, quad, 3, p2[0], p2[1], round(l, 3), round(slope, 3)]
+            csv23.write(writer, row)
+            row = [site, team, quad, 4, p4[0], p4[1], round(l, 3), round(slope, 3)]
+            csv23.write(writer, row)
             # shape = [p1,p2,p3,p4,p1]
             # write_feature([team, quad, l, shape)
 
