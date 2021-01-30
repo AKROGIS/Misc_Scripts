@@ -13,13 +13,7 @@ GPS coordinates are on solid ground, but the corner of the quadrant
 being measured may be in the air due to rocks supporting other parts
 of the pvc square
 
-The structure of the CSV looks like this:
-
-Site,Name,Team,Quad,FeatureCod,Easting,Northing,Orth_Elev,LocalLatit,LocalLongi,LocalEllip,H_Prec_Obs,V_Prec_Obs,Date_Obs,Time_Obs
-19,19_TA_QU01,A,1,QUAD_C1,493338.2325,581494.5272,-1.574847,59.222571,-154.116672,10.665757,0.013484,0.017039,5/15/2018,9:38:27 AM
-19,19_TA_QL01,A,1,QUAD_C2,493338.8142,581494.9555,-1.655107,59.222575,-154.116662,10.585469,0.013476,0.017026,5/15/2018,9:38:54 AM
-19,19_TA_QL02,A,2,QUAD_C2,493332.2278,581497.0564,-1.776223,59.222594,-154.116777,10.464726,0.013578,0.016955,5/15/2018,9:45:20 AM
-19,19_TA_QU02,A,2,QUAD_C1,493331.5725,581496.7227,-1.771056,59.222591,-154.116789,10.469926,0.013561,0.016915,5/15/2018,9:45:53 AM
+See `test.csv` for structure of the input CSV.
 
 Third party requirements:
 * arcpy - Installed with ArcGIS
@@ -33,46 +27,65 @@ import math
 import csv23
 
 
-def corners(p1, p3):
-    delta = (p3[0] - p1[0], p3[1] - p1[1])
+def corners(p_1, p_3):
+    """Calculate the missing corners and side_len of a 2D quadrangle given two points."""
+
+    delta = (p_3[0] - p_1[0], p_3[1] - p_1[1])
     diag = math.sqrt(delta[0] ** 2 + delta[1] ** 2)
-    l = diag / math.sqrt(2.0)
+    side_len = diag / math.sqrt(2.0)
     theta = math.atan2(delta[1], delta[0])  # operand order is (y,x)
     alpha = math.pi / 4.0
-    p2 = (p1[0] + l * math.cos(theta - alpha), p1[1] + l * math.sin(theta - alpha))
-    p4 = (p1[0] + l * math.cos(theta + alpha), p1[1] + l * math.sin(theta + alpha))
-    # print(delta, diag, l, theta, alpha)
-    return p2, p4, l, 0
+    p_2 = (
+        p_1[0] + side_len * math.cos(theta - alpha),
+        p_1[1] + side_len * math.sin(theta - alpha),
+    )
+    p_4 = (
+        p_1[0] + side_len * math.cos(theta + alpha),
+        p_1[1] + side_len * math.sin(theta + alpha),
+    )
+    # print(delta, diag, side_len, theta, alpha)
+    return p_2, p_4, side_len, 0
 
 
-def corners3d(p1, p3):
-    delta = (p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2])
+def corners3d(p_1, p_3):
+    """Calculate the missing corners, diagonal and slope of a 3D quadrangle given two points."""
+
+    delta = (p_3[0] - p_1[0], p_3[1] - p_1[1], p_3[2] - p_1[2])
     diag = math.sqrt(delta[0] ** 2 + delta[1] ** 2 + delta[2] ** 2)
-    l = diag / math.sqrt(2.0)
-    slope = 100.0 * delta[2] / l
+    side_len = diag / math.sqrt(2.0)
+    slope = 100.0 * delta[2] / side_len
     # print(round(delta[2],2), round(slope,2))
     theta = math.atan2(delta[1], delta[0])  # operand order is (y,x)
     alpha = math.pi / 4.0
-    p2 = (p1[0] + l * math.cos(theta - alpha), p1[1] + l * math.sin(theta - alpha), 0)
-    p4 = (p1[0] + l * math.cos(theta + alpha), p1[1] + l * math.sin(theta + alpha), 0)
-    # print(delta, diag, l, theta, alpha)
-    return p2, p4, l, slope
+    p_2 = (
+        p_1[0] + side_len * math.cos(theta - alpha),
+        p_1[1] + side_len * math.sin(theta - alpha),
+        0,
+    )
+    p_4 = (
+        p_1[0] + side_len * math.cos(theta + alpha),
+        p_1[1] + side_len * math.sin(theta + alpha),
+        0,
+    )
+    # print(delta, diag, side_len, theta, alpha)
+    return p_2, p_4, side_len, slope
 
 
 def readfile(filename):
+    """Read the input CSV data in filename (formatted as described above)."""
     data = {}
-    with csv23.open(filename, "r") as fi:
-        _ = fi.readline()  # ignore the header
-        reader = csv.reader(fi)
+    with csv23.open(filename, "r") as in_file:
+        reader = csv.reader(in_file)
+        next(reader)  # ignore the header
         for row in reader:
             row = csv23.fix(row)
             # print(row[2:7])
             site = row[0]
             team = row[2]
             quad = row[3]
-            name = site + "|" + team + str(quad)
+            name = "{0}|{1}{2}".format(site, team, quad)
             corner = int(row[4][-1:])
-            if corner != 1 and corner != 2:
+            if corner not in (1, 2):
                 print(site, team, name, name, corner)
                 continue
             x = float(row[5])
@@ -86,8 +99,10 @@ def readfile(filename):
 
 
 def writedata(filename, data):
-    with csv23.open(filename, "w") as fo:
-        writer = csv.writer(fo)
+    """Write the data as CSV in filename."""
+
+    with csv23.open(filename, "w") as out_file:
+        writer = csv.writer(out_file)
         header = [
             "Site",
             "Team",
@@ -104,27 +119,50 @@ def writedata(filename, data):
             team = teamquad[:1]
             quad = teamquad[1:]
             if 1 in data[name]:
-                p1 = data[name][1]
+                p_1 = data[name][1]
             else:
                 print("Error Corner 1 not found in " + name)
                 continue
             if 2 in data[name]:
-                p3 = data[name][2]
+                p_3 = data[name][2]
             else:
                 print("Error Corner 2 not found in " + name)
                 continue
-            p2, p4, l, slope = corners3d(p1, p3)
-            row = [site, team, quad, 3, p2[0], p2[1], round(l, 3), round(slope, 3)]
+            p_2, p_4, side_len, slope = corners3d(p_1, p_3)
+            row = [
+                site,
+                team,
+                quad,
+                3,
+                p_2[0],
+                p_2[1],
+                round(side_len, 3),
+                round(slope, 3),
+            ]
             csv23.write(writer, row)
-            row = [site, team, quad, 4, p4[0], p4[1], round(l, 3), round(slope, 3)]
+            row = [
+                site,
+                team,
+                quad,
+                4,
+                p_4[0],
+                p_4[1],
+                round(side_len, 3),
+                round(slope, 3),
+            ]
             csv23.write(writer, row)
-            # shape = [p1,p2,p3,p4,p1]
-            # write_feature([team, quad, l, shape)
+            # shape = [p_1,p_2,p_3,p_4,p_1]
+            # write_feature([team, quad, side_len, shape)
 
 
 def writefc(fcname, data):
-    # Create new FGDB, and polygon FC with projection AK StatePlane 5 meters (nad83)
-    # Create the following fields, text, except SideLength and Slope are Double
+    """
+    Write the data to a polygon feature class.
+
+    First create new FGDB, and polygon FC with projection AK StatePlane 5 meters (nad83)
+    Then create the fields listed below as text, except SideLength and Slope are Double.
+    """
+
     import arcpy
 
     fields = ["Site", "Team", "Quad", "SideLength", "Slope", "SHAPE@"]
@@ -133,42 +171,46 @@ def writefc(fcname, data):
         site, teamquad = name.split("|")
         team = teamquad[:1]
         quad = teamquad[1:]
-        p1 = data[name][1]
-        p3 = data[name][2]
-        p2, p4, l, slope = corners3d(p1, p3)
-        points = [p1, p2, p3, p4, p1]
+        p_1 = data[name][1]
+        p_3 = data[name][2]
+        p_2, p_4, side_len, slope = corners3d(p_1, p_3)
+        points = [p_1, p_2, p_3, p_4, p_1]
         shape = arcpy.Polygon(arcpy.Array([arcpy.Point(*coords) for coords in points]))
-        cursor.insertRow((site, team, quad, l, slope, shape))
+        cursor.insertRow((site, team, quad, side_len, slope, shape))
     del cursor
 
 
 def test1():
-    p1 = (3, 2)
-    p3 = (7, 6)
-    p2, p4, l = corners(p1, p3)
-    print(p1, p2, p3, p4, l)
+    """Test calculating 2D corners."""
+    p_1 = (3, 2)
+    p_3 = (7, 6)
+    p_2, p_4, side_len, _ = corners(p_1, p_3)
+    print(p_1, p_2, p_3, p_4, side_len)
 
 
 def test2():
-    p1 = (3, 1, 0)
-    p3 = (6, 5, 5)
-    p2, p4, l = corners3d(p1, p3)
-    print(p1, p2, p3, p4, l)
+    """Test calculating 3D corners."""
+    p_1 = (3, 1, 0)
+    p_3 = (6, 5, 5)
+    p_2, p_4, side_len, _ = corners3d(p_1, p_3)
+    print(p_1, p_2, p_3, p_4, side_len)
 
 
 def test3():
-    filename = "/Users/RESarwas/Downloads/All_Quadrats_V2"
+    "Test reading CSV and writing to CSV."
+    filename = "test"
     data = readfile(filename + ".csv")
     writedata(filename + "_out.csv", data)
 
 
 def test4():
-    filename = "/Users/RESarwas/Downloads/All_Quadrats_V2"
+    "Test reading CSV and writing to feature class."
+    filename = "test"
     data = readfile(filename + ".csv")
     writefc("/tmp/Sarah.gdb/quads", data)
 
 
 # test1()
 # test2()
-# test3()
-test4()
+test3()
+# test4()
