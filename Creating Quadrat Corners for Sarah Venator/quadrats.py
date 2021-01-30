@@ -13,6 +13,8 @@ GPS coordinates are on solid ground, but the corner of the quadrant
 being measured may be in the air due to rocks supporting other parts
 of the pvc square
 
+Edit the Config object below as needed for each execution.
+
 See `test.csv` for structure of the input CSV.
 
 Third party requirements:
@@ -25,6 +27,22 @@ import csv
 import math
 
 import csv23
+
+
+class Config(object):
+    """Namespace for configuration parameters. Edit as necessary."""
+
+    # pylint: disable=useless-object-inheritance,too-few-public-methods
+
+    # Input CSV file
+    in_csv = "test.csv"
+
+    # Output CSV file, Use None to skip.
+    out_csv = "test_out.csv"
+
+    # Output feature class, use None to skip.
+    # out_features = "C:/tmp/sarah.gdb/quads"
+    out_features = None
 
 
 def corners(p_1, p_3):
@@ -88,6 +106,8 @@ def readfile(filename):
             if corner not in (1, 2):
                 print(site, team, name, name, corner)
                 continue
+            # pylint: disable=invalid-name
+            # I think x,y,z, while too short, are the best variables names here.
             x = float(row[5])
             y = float(row[6])
             z = float(row[7])
@@ -100,6 +120,8 @@ def readfile(filename):
 
 def writedata(filename, data):
     """Write the data as CSV in filename."""
+
+    # pylint: disable=too-many-locals
 
     with csv23.open(filename, "w") as out_file:
         writer = csv.writer(out_file)
@@ -151,11 +173,9 @@ def writedata(filename, data):
                 round(slope, 3),
             ]
             csv23.write(writer, row)
-            # shape = [p_1,p_2,p_3,p_4,p_1]
-            # write_feature([team, quad, side_len, shape)
 
 
-def writefc(fcname, data):
+def write_fc(fc_name, data):
     """
     Write the data to a polygon feature class.
 
@@ -163,21 +183,25 @@ def writefc(fcname, data):
     Then create the fields listed below as text, except SideLength and Slope are Double.
     """
 
+    # pylint: disable=too-many-locals,import-outside-toplevel
+    # only import arcpy if needed, allows CSV output when arcpy is not available.
+
     import arcpy
 
     fields = ["Site", "Team", "Quad", "SideLength", "Slope", "SHAPE@"]
-    cursor = arcpy.da.InsertCursor(fcname, fields)
-    for name in sorted(data.keys()):
-        site, teamquad = name.split("|")
-        team = teamquad[:1]
-        quad = teamquad[1:]
-        p_1 = data[name][1]
-        p_3 = data[name][2]
-        p_2, p_4, side_len, slope = corners3d(p_1, p_3)
-        points = [p_1, p_2, p_3, p_4, p_1]
-        shape = arcpy.Polygon(arcpy.Array([arcpy.Point(*coords) for coords in points]))
-        cursor.insertRow((site, team, quad, side_len, slope, shape))
-    del cursor
+    with arcpy.da.InsertCursor(fc_name, fields) as cursor:
+        for name in sorted(data.keys()):
+            site, teamquad = name.split("|")
+            team = teamquad[:1]
+            quad = teamquad[1:]
+            p_1 = data[name][1]
+            p_3 = data[name][2]
+            p_2, p_4, side_len, slope = corners3d(p_1, p_3)
+            points = [p_1, p_2, p_3, p_4, p_1]
+            shape = arcpy.Polygon(
+                arcpy.Array([arcpy.Point(*coords) for coords in points])
+            )
+            cursor.insertRow((site, team, quad, side_len, slope, shape))
 
 
 def test1():
@@ -196,21 +220,16 @@ def test2():
     print(p_1, p_2, p_3, p_4, side_len)
 
 
-def test3():
-    "Test reading CSV and writing to CSV."
-    filename = "test"
-    data = readfile(filename + ".csv")
-    writedata(filename + "_out.csv", data)
+def create_output():
+    "Reading the CSV and write a new CSV and or feature class."
+    data = readfile(Config.in_csv)
+    if Config.out_csv is not None:
+        writedata(Config.out_csv, data)
+    if Config.out_features is not None:
+        write_fc(Config.out_features, data)
 
 
-def test4():
-    "Test reading CSV and writing to feature class."
-    filename = "test"
-    data = readfile(filename + ".csv")
-    writefc("/tmp/Sarah.gdb/quads", data)
-
-
-# test1()
-# test2()
-test3()
-# test4()
+if __name__ == "__main__":
+    # test1()
+    # test2()
+    create_output()
