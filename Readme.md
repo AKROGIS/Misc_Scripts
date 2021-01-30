@@ -18,6 +18,12 @@ on attributes of the record in the CSV.  This script is specific to a
 data publishing request by DENA and the CSV file they provided, but it
 could easily be adapted to a similar problem.
 
+## csv23.py
+
+Functions to open, read and write CSV files that may contain unicode
+in a Python 2 and 3 compatible way.  this file is intended to by `import`ed
+into other scripts.  See the header or `copyfiles.py` for examples.
+
 ## Creating Quadrat Corners
 
 A python script for Sarah Venator that reads records in a CSV with 3D

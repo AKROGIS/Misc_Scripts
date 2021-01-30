@@ -11,10 +11,10 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import csv
 import json
-import sys
 
 import requests
 
+import csv23
 
 KEY = "xxx___YOUR_API_KEY_GOES_HERE___xxx"
 # To get an API Key, See https://www.nps.gov/subjects/developer/get-started.htm
@@ -47,7 +47,7 @@ def get_all_items(kind):
 
 # items is a dict keyed with strings
 # keys is a list of strings that are keys in items
-# returns a list of strings reresenting the values of the items matching the keys
+# returns a list of strings representing the values of the items matching the keys
 # if a key in keys is not a key in items, it is silently ignored
 def simplify(item, keys):
     d = []
@@ -59,36 +59,14 @@ def simplify(item, keys):
     return d
 
 
-def open_csv_write(filename):
-    """Open a file for CSV writing in a Python 2 and 3 compatible way."""
-    if sys.version_info[0] < 3:
-        return open(filename, "wb")
-    return open(filename, "w", encoding="utf8", newline="")
-
-
-def write_csv_row(writer, row):
-    """writer is a csv.writer, and row is a list of unicode or number objects."""
-    if sys.version_info[0] < 3:
-        # Ignore the pylint error that unicode is undefined in Python 3
-        # pylint: disable=undefined-variable
-        writer.writerow(
-            [
-                item.encode("utf-8") if isinstance(item, unicode) else item
-                for item in row
-            ]
-        )
-    else:
-        writer.writerow(row)
-
-
 def make_csv(kind, fields):
     data = get_all_items(kind)
-    with open(kind + ".csv") as f:
+    with csv23.open(kind + ".csv", "w") as f:
         writer = csv.writer(f)
-        write_csv_row(writer, fields)
+        csv23.write(writer, fields)
         for item in data:
             values = simplify(item, fields)
-            write_csv_row(writer, values)
+            csv23.write(writer, values)
 
 
 def main():
