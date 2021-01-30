@@ -3,6 +3,8 @@
 Walks a file system and reports the spatial reference of each data frame
 in each map (*.mxd) file found.
 
+Edit the Config object below as needed for each execution.
+
 Third party requirements:
 * requests - https://pypi.org/project/requests/
 * arcpy - Installed with ArcGIS
@@ -17,16 +19,23 @@ import arcpy.mapping
 
 import csv23
 
-results = r"c:\tmp\sr.csv"
-start = r"c:\tmp\Changing Tides"
+class Config(object):
+    """Namespace for configuration parameters. Edit as needed."""
+
+    # pylint: disable=useless-object-inheritance,too-few-public-methods
+
+    # Write the results to this file path.
+    results = r"c:\tmp\sr.csv"
+    # The folder to search.
+    start = r"c:\tmp\Changing Tides"
 
 
-with csv23.open(results, "w") as f:
+with csv23.open(Config.results, "w") as f:
     csv_writer = csv.writer(f)
     header = ["mxd", "data_frame", "spatial_reference"]
     csv23.write(csv_writer, header)
     csv_writer.writerow()
-    for root, dirs, files in os.walk(start):
+    for root, dirs, files in os.walk(Config.start):
         for file in files:
             if os.path.splitext(file)[1].lower() == ".mxd":
                 suspect = os.path.join(root, file)
@@ -41,7 +50,7 @@ with csv23.open(results, "w") as f:
                         )
                         row = [suspect, df.name, df.spatialReference.name]
                         csv23.write(csv_writer, row)
-                except:
+                except arcpy.ExecuteError:
                     print("ERROR: Unable to check document")
                     row = [suspect, "ERROR", "ERROR"]
                     csv23.write(csv_writer, row)

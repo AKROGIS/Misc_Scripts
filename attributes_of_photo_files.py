@@ -6,30 +6,39 @@ author = "Regan Sarwas, GIS Team, Alaska Region, National Park Service"
 email = "regan_sarwas@nps.gov"
 copyright = "Public Domain - product of the US Government"
 
+Edit the Config object below as needed for each execution.
+
 Third party requirements:
 * exifread - https://pypi.python.org/pypi/ExifRead
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import datetime
 from io import open
 import os
 
 import exifread
 
 
-# Look for photos in the script folder
-root = os.path.dirname(os.path.abspath(__file__))
-# Or specify a folder here
-# root = "/Users/regan_sarwas/Desktop/photos/"
-csv = os.path.join(root, "PhotoList.csv")
+class Config(object):
+    """Namespace for configuration parameters. Edit as necessary."""
 
-with open(csv, "w", encoding="utf-8") as f:
+    # pylint: disable=useless-object-inheritance,too-few-public-methods
+
+    # Look for photos in this folder.
+    search_folder = "C:/tmp"
+
+    # Write the list of file data to this file.
+    out_list = os.path.join(search_folder, "PhotoList.csv")
+
+
+with open(Config.out_list, "w", encoding="utf-8") as f:
     f.write("folder,photo,exifdate,lat,lon,gpsdate,filedate\n")
-    for filename in os.listdir(root):
+    for filename in os.listdir(Config.search_folder):
         base, extension = os.path.splitext(filename)
         if extension.lower() == ".jpg":
-            path = os.path.join(root, filename)
+            path = os.path.join(Config.search_folder, filename)
             lat, lon, exifdate, gpsdate = "", "", "", ""
             with open(path, "rb") as pf:
                 # exifread wants binary data
@@ -98,6 +107,6 @@ with open(csv, "w", encoding="utf-8") as f:
             )  # microsoft excel acceptable ISO format
             f.write(
                 "{0},{1},{2},{3},{4},{5},{6}\n".format(
-                    folder, filename, exifdate, lat, lon, gpsdate, filedate
+                    Config.search_folder, filename, exifdate, lat, lon, gpsdate, filedate
                 )
             )
