@@ -145,10 +145,10 @@ with arcpy.da.SearchCursor(Config.road_fc, "Shape@", where) as cursor:
         road = row[0]
 
 if not road:
-    id = "first"
+    oid = "first"
     if Config.road_id:
-        id = "oid = {0}".format(Config.road_id)
-    print("The road feature was not found ({0} in {1})".format(id, Config.road_fc))
+        oid = "oid = {0}".format(Config.road_id)
+    print("The road feature was not found ({0} in {1})".format(oid, Config.road_fc))
     sys.exit()
 
 ############################
@@ -174,8 +174,8 @@ def calculate(pts, line, start=0, search_radius="100 Meters"):
     with arcpy.da.SearchCursor("in_memory\\results", ["OBS_ID", "MP"]) as out_cursor:
         mileposts = dict(out_cursor)
     if start != 0:
-        for id in mileposts:
-            mileposts[id] = mileposts[id] + start
+        for mile_id in mileposts:
+            mileposts[mile_id] = mileposts[mile_id] + start
     arcpy.Delete_management(tbl)
     arcpy.Delete_management(pt_fc)
     return mileposts
@@ -200,12 +200,11 @@ for table_name in Config.table_names:
     rcursor = None
     try:
         rcursor = pyodbc.connect(Config.connection).cursor()
-        pass
-    except pyodbc.Error as e:
+    except pyodbc.Error as ex:
         print("Rats!!  Unable to connect to your database.")
         print("Contact Regan (regan_sarwas@nps.gov) for assistance.")
         print("  Connection: " + Config.connection)
-        print("  Error: " + e[1])
+        print("  Error: " + ex[1])
         sys.exit()
     rows = rcursor.execute(sql).fetchall()
 
@@ -214,10 +213,10 @@ for table_name in Config.table_names:
 
     print("\n  Updating Database...")
     wcursor = pyodbc.connect(Config.connection).cursor()
-    for id in mileposts:
+    for mile_id in mileposts:
         sql = "UPDATE {0} SET {1} = {2} WHERE {3} = {4}"
         sql = sql.format(
-            table_name, Config.milepost_field_name, mileposts[id], Config.id_field_name, id
+            table_name, Config.milepost_field_name, mileposts[mile_id], Config.id_field_name, mile_id
         )
         # print(sql)
         wcursor.execute(sql)
