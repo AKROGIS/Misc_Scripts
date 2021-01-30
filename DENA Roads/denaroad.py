@@ -27,9 +27,12 @@ class Config(object):
     # The connection string to the MS Access database.  In pyodbc format
     # See https://code.google.com/p/pyodbc/wiki/ConnectionStrings
     # The following works on 64bit windows 7 enterprise with MS Access 2010
-    connection = r"Driver={Microsoft Access Driver (*.mdb, *.accdb)}; Dbq=" + database_path
+    connection = (
+        r"Driver={Microsoft Access Driver (*.mdb, *.accdb)}; Dbq=" + database_path
+    )
     # Neither works on 64bit Windows 8.1 with MS Access 2013
-    # connection = r'Provider=Microsoft.ACE.OLEDB.12.0;Data Source={0};Persist Security Info=False;'.format(database_path)
+    # connection = r'Provider=Microsoft.ACE.OLEDB.12.0;Data Source={0};Persist
+    #                Security Info=False;'.format(database_path)
 
     # The name of the measured park road feature class.
     # Could be any valid ArcCatalog path, but the data set must be measured.
@@ -133,23 +136,30 @@ if not arcpy.Exists(Config.road_fc):
     )
     sys.exit()
 
-# Find the measured road centerline
-print("Getting Measured Road Centerline...")
-road = None
-where = None
-if Config.road_id:
-    where = "{} = {}".format(arcpy.Describe(Config.road_fc).OIDFieldName, Config.road_id)
-with arcpy.da.SearchCursor(Config.road_fc, "Shape@", where) as cursor:
-    row = cursor.next()
-    if row:
-        road = row[0]
 
-if not road:
-    oid = "first"
+def get_road():
+    """Find the measured road centerline."""
+
+    print("Getting Measured Road Centerline...")
+    road = None
+    where = None
     if Config.road_id:
-        oid = "oid = {0}".format(Config.road_id)
-    print("The road feature was not found ({0} in {1})".format(oid, Config.road_fc))
-    sys.exit()
+        where = "{} = {}".format(
+            arcpy.Describe(Config.road_fc).OIDFieldName, Config.road_id
+        )
+    with arcpy.da.SearchCursor(Config.road_fc, "Shape@", where) as cursor:
+        row = cursor.next()
+        if row:
+            road = row[0]
+
+    if not road:
+        oid = "first"
+        if Config.road_id:
+            oid = "oid = {0}".format(Config.road_id)
+        print("The road feature was not found ({0} in {1})".format(oid, Config.road_fc))
+        sys.exit()
+    return road
+
 
 ############################
 # End Environment validation
@@ -157,6 +167,8 @@ if not road:
 
 
 def calculate(pts, line, start=0, search_radius="100 Meters"):
+    """Calculate the milepost of each point in pts."""
+
     # pts = sequence of (id,lat,lon)
     # line = linear feature class with routes (linear referencing)
     rid = "ROUTE"
@@ -168,9 +180,11 @@ def calculate(pts, line, start=0, search_radius="100 Meters"):
     )
     arcpy.AddField_management(pt_fc, "OBS_ID", "Long")
     with arcpy.da.InsertCursor(pt_fc, ["OBS_ID", "SHAPE@XY"]) as in_cursor:
-        for pt in pts:
-            in_cursor.insertRow([pt[0], (pt[2], pt[1])])
-    arcpy.LocateFeaturesAlongRoutes_lr(pt_fc, Config.road_fc, rid, search_radius, tbl, props)
+        for point in pts:
+            in_cursor.insertRow([point[0], (point[2], point[1])])
+    arcpy.LocateFeaturesAlongRoutes_lr(
+        pt_fc, Config.road_fc, rid, search_radius, tbl, props
+    )
     with arcpy.da.SearchCursor("in_memory\\results", ["OBS_ID", "MP"]) as out_cursor:
         mileposts = dict(out_cursor)
     if start != 0:
@@ -181,7 +195,9 @@ def calculate(pts, line, start=0, search_radius="100 Meters"):
     return mileposts
 
 
-for table_name in Config.table_names:
+def get_observations(table_name):
+    """Get the observations in a table_name."""
+
     print("Processing Table {0} ...".format(table_name))
     # Get records that need to be updated
     print("  Finding Road Observations to Update...")
@@ -207,17 +223,35 @@ for table_name in Config.table_names:
         print("  Error: " + ex[1])
         sys.exit()
     rows = rcursor.execute(sql).fetchall()
+    return rows
 
-    print("  Calculating {0} Road Observations".format(len(rows)))
-    mileposts = calculate(rows, road, Config.road_start_mile, Config.search_radius)
 
-    print("\n  Updating Database...")
-    wcursor = pyodbc.connect(Config.connection).cursor()
-    for mile_id in mileposts:
-        sql = "UPDATE {0} SET {1} = {2} WHERE {3} = {4}"
-        sql = sql.format(
-            table_name, Config.milepost_field_name, mileposts[mile_id], Config.id_field_name, mile_id
+def main():
+    """Update the database with the milepost of the observations."""
+
+    road = get_road()
+    for table_name in Config.table_names:
+        observations = get_observations(table_name)
+        print("  Calculating {0} Road Observations".format(len(observations)))
+        mileposts = calculate(
+            observations, road, Config.road_start_mile, Config.search_radius
         )
-        # print(sql)
-        wcursor.execute(sql)
-    wcursor.commit()
+
+        print("\n  Updating Database...")
+        with pyodbc.connect(Config.connection).cursor() as cursor:
+            for mile_id in mileposts:
+                sql = "UPDATE {0} SET {1} = {2} WHERE {3} = {4}"
+                sql = sql.format(
+                    table_name,
+                    Config.milepost_field_name,
+                    mileposts[mile_id],
+                    Config.id_field_name,
+                    mile_id,
+                )
+                # print(sql)
+                cursor.execute(sql)
+            cursor.commit()
+
+
+if __name__ == "__main__":
+    main()
