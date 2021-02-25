@@ -103,8 +103,8 @@ for each `*.jpg` file found.
 ## `compare_trees.py`
 
 Compares two similar folders (usually a source and a copy) and prints a list of
-the files that are new, deleted, and updated.  Files are compared by name and
-modification timestamp, not by file contents. The paths to the two folders and
+the files that are new, deleted, and duplicate.  Files are compared by name only
+not by modification timestamp or file contents. The paths to the two folders and
 which list are printed is specified by editing the Config object at the start
 of the script before running.
 
