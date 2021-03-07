@@ -2,11 +2,24 @@
 """
 Creates a CSV list of photos (and select metadata) for all photos in a folder.
 
-author = "Regan Sarwas, GIS Team, Alaska Region, National Park Service"
-email = "regan_sarwas@nps.gov"
-copyright = "Public Domain - product of the US Government"
+The CSV file will have the following columns:
+
+folder,photo,exif_date,lat,lon,gpsdate,filedate
+
+folder - the sub folder under `Config.photo_root` containing the photo
+photo - the filename of the photo (any file with a `.jpg` extension)
+exif_date - the date the photo was taken as encoded in the EXIF data
+lat - the latitude of the photo location as encoded in the EXIF data
+lon - the longitude of the photo location as encoded in the EXIF data
+gpsdate - the date (in UTC) the photo was taken as encoded in the EXIF data
+filedate - the file systems last modified date for the photo file
 
 Edit the Config object below as needed for each execution.
+
+A version of this script was adapted to the specific requirements of the
+FMSS photo processing done by Joel.  See
+https://github.com/AKROGIS/Facility-Processing/blob/master/Photo%20Processing/extra/make_photo_list.py
+
 
 Third party requirements:
 * exifread - https://pypi.python.org/pypi/ExifRead
